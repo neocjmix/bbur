@@ -1,0 +1,6 @@
+.basic{
+    border: solid 1px #bbb;
+    border-radius: 3px;
+    box-shadow: 0 0 15px 0 rgba(0,0,0,0.2);
+    padding: 10px;
+}
