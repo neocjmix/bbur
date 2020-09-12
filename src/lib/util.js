@@ -1,5 +1,3 @@
-export const range = (start, end) => new Array(end - start + 1).fill().map((d, i) => i + start)
-
 export const isFlatMappable = object => object && object.flatMap && typeof object.flatMap === 'function'
 
 export const flatten = maybeArray => isFlatMappable(maybeArray)
@@ -21,7 +19,23 @@ export const deepFreeze = o => {
   return o;
 };
 
-export const classify = (array, classifier) => array.reduce(([successes, fails], item) => {
-  (classifier(item) ? successes : fails).push(item);
-  return [successes, fails];
-}, [[], []])
+export const classifyFields = (object, classifier) => {
+  const truethyFields = {};
+  const falsyFields = {};
+  for (const objectKey in object) {
+    if (object.hasOwnProperty(objectKey)) {
+      (classifier(objectKey, object) ? truethyFields : falsyFields)[objectKey] = object[objectKey]
+    }
+  }
+  return [truethyFields, falsyFields];
+}
+
+export const getFinalNodeData = node => {
+  if (typeof node === 'function') {
+    return getFinalNodeData(node());
+  }
+  if (node === null || node === undefined || node === false || node.length === 0) {
+    return '';
+  }
+  return node;
+};

@@ -1,31 +1,80 @@
 import {FieldNames} from "../contants.js";
-import {classify} from '../lib/util.js';
+import {classifyFields, getFinalNodeData} from '../lib/util.js';
 import syncChildren from "./syncChildren.js";
 import syncAttributes from "./syncAttributes.js";
 import syncEventHandlers from "./syncEventHandlers.js";
 import syncTextNode from "./syncTextNode.js";
+import RenderContext from "./RenderContext.js";
 
-const getFinalNodeData = node => typeof node === 'function' ? getFinalNodeData(node()) : node
+export const syncNode = (nodeData, domNode, index, rootDomNode, context, isRoot) => {
+  if (context.aborted) {
+    if (!isRoot) {
+      return domNode;
+    }
 
-const sync = (node, domNode = node.lastRenderedNode, index = (node.lastRenderedIndex || 0), rootDomNode = domNode) => {
-  const nodeData = getFinalNodeData(node)
+    context.complete();
+    if (context.next) {
+      context.next();
+    }
+  }
 
-  if (!nodeData[FieldNames.IS_BBUR_NODE]) {
+  if (typeof nodeData === 'string') {
     return syncTextNode(nodeData, domNode, index);
   }
 
   const {tagName, properties, children} = nodeData;
-  const [eventHandlers, attributes] = classify(Object.entries(properties), ([key]) => key.startsWith('on'))
-  const targetDomNode = domNode === undefined ? document.createElement(tagName) : domNode;
+  const [eventHandlers, attributes] = classifyFields(properties, (key) => key.match(/^on[A-Z]/))
+
+  let targetDomNode;
+  if (domNode === undefined) {
+    targetDomNode = document.createElement(tagName);
+  } else if (domNode.tagName !== tagName.toUpperCase()) {
+    domNode.remove();
+    targetDomNode = document.createElement(tagName);
+  } else {
+    targetDomNode = domNode;
+  }
 
   syncEventHandlers(eventHandlers, targetDomNode, rootDomNode);
   syncAttributes(attributes, targetDomNode);
-  syncChildren(children, targetDomNode, rootDomNode);
+  syncChildren(children, targetDomNode, rootDomNode, context);
 
-  targetDomNode[FieldNames.CHILDREN_INDEX] = index
   nodeData.lastRenderedNode = targetDomNode;
   nodeData.lastRenderedIndex = index;
-  return targetDomNode;
+  targetDomNode[FieldNames.NODE_GROUP_INDEX] = index;
+
+  if (attributes.key !== undefined) {
+    targetDomNode[FieldNames.NODE_KEY] = attributes.key
+  }
+
+  if (!isRoot) {
+    return targetDomNode;
+  }
+
+  context.complete();
+  if (context.next) {
+    context.next();
+  }
 }
+
+let currentContext = new RenderContext(true)
+
+const sync = (node, domNode) => {
+  const nodeData = getFinalNodeData(node)
+  const index = nodeData.lastRenderedIndex || 0
+
+  if (domNode === undefined) {
+    domNode = nodeData.lastRenderedNode;
+  }
+
+  const previousContext = currentContext;
+  currentContext = new RenderContext();
+
+  if (previousContext.completed) {
+    syncNode(nodeData, domNode, index, domNode, currentContext, true);
+  } else {
+    previousContext.abort(() => syncNode(nodeData, domNode, index, domNode, currentContext, true))
+  }
+};
 
 export default sync

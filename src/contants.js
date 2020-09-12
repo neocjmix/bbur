@@ -1,4 +1,4 @@
 export const FieldNames = {
-  CHILDREN_INDEX: '__bbur$$childrenIndex',
-  IS_BBUR_NODE: '__bbur$$isBburNode'
+  NODE_GROUP_INDEX: '__bbur$$nodeGroupIndex',
+  NODE_KEY: '__bbur$$nodeKey',
 };

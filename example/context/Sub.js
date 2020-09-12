@@ -1,7 +1,7 @@
 import {br, button, input, label} from '/src/html.js'
 import withContext from "/src/withContext.js";
 import sync from "/src/core/sync.js";
-import {h1, section} from "../src/html.js";
+import {h1, section} from "../../src/html.js";
 
 const state = new Proxy({
   number: 0,

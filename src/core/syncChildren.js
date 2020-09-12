@@ -1,38 +1,69 @@
 import {FieldNames} from "../contants.js";
-import {flatten} from "../lib/util.js";
-import sync from "./sync.js";
+import {flatten, getFinalNodeData} from "../lib/util.js";
+import {syncNode} from "./sync.js";
 
 const getChildDomNodesGroups = (element, length) => {
   const childNodesGroups = new Array(length).fill().map(() => []);
   element.childNodes.forEach(childNode => {
-    const childrenIndex = childNode[FieldNames.CHILDREN_INDEX];
-    if (childrenIndex != null && Array.isArray(childNodesGroups[childrenIndex])) {
-      childNodesGroups[childrenIndex].push(childNode)
+    const nodeGroupIndex = childNode[FieldNames.NODE_GROUP_INDEX];
+    if (nodeGroupIndex != null && Array.isArray(childNodesGroups[nodeGroupIndex])) {
+      childNodesGroups[nodeGroupIndex].push(childNode)
     }
   })
   return childNodesGroups
 };
-const MatchNbyN = (nodes, domNodes, callback) => {
-  if (nodes.length === 1 && domNodes.length <= 1) {
-    return [callback(nodes[0], domNodes[0])]
-  }
-  //todo N:N
+
+//todo optimize
+const MatchByKey = (nodes, domNodes) => {
+  const domNodesWithKeys = {}
+  const domNodesWithoutKeys = []
+
+  domNodes.forEach(domNode => {
+    const nodeKey = domNode[FieldNames.NODE_KEY];
+    if (nodeKey === undefined) {
+      domNodesWithoutKeys.push(domNode)
+    } else {
+      domNodesWithKeys[nodeKey] = domNode
+    }
+  })
+
+  return nodes.map(node =>
+    node?.properties?.key === undefined
+      ? [node, domNodesWithoutKeys.shift()]
+      : [node, domNodesWithKeys[node.properties.key]]);
 }
-const syncChildren = (children, targetDomNode, rootDomNode) => {
+
+const syncChildren = (children, targetDomNode, rootDomNode, syncContext = {}) => {
   const childDomNodesGroups = getChildDomNodesGroups(targetDomNode, children.length);
-  const updatedChildElementsGroup = children.map((child, childOrder) => {
+  const updatedChildDomNodesGroup = children.map((child, childOrder) => {
     const nodes = flatten([child]);
     const childDomNodesGroup = childDomNodesGroups[childOrder];
-    return MatchNbyN(nodes, childDomNodesGroup, (node, domNode) => sync(node, domNode, childOrder, rootDomNode));
+    return MatchByKey(nodes, childDomNodesGroup).map(([node, domNode]) => (
+      syncNode(getFinalNodeData(node), domNode, childOrder, rootDomNode, syncContext)
+    ));
   });
 
-  flatten(updatedChildElementsGroup).reduce((prevElement, childElement) => {
-    if (childElement.parentNode === targetDomNode) return childElement;
-    if (prevElement && prevElement.parentNode === targetDomNode) {
-      prevElement.after(childElement)
-    } else {
-      targetDomNode.appendChild(childElement)
+  //todo optimize
+  flatten(updatedChildDomNodesGroup)
+    .filter(childDomNode => childDomNode !== undefined) // when aborted, remaining updatedChildDomNode could be undefined.
+    .reduce((prevDomNode, childDomNode, index, {length}, isLast = index === length - 1) => {
+    if (childDomNode.parentNode !== targetDomNode) {
+
+      if (prevDomNode && prevDomNode.parentNode === targetDomNode) {
+        prevDomNode.after(childDomNode)
+      } else {
+        targetDomNode.appendChild(childDomNode)
+      }
+
+      syncContext.addDomEvent("connect", childDomNode)
     }
+    while (childDomNode.previousSibling && childDomNode.previousSibling !== prevDomNode) {
+      childDomNode.previousSibling.remove();
+    }
+    // if(isLast){
+    //   console.log(childDomNode);
+    // }
+    return childDomNode;
   }, null)
 };
 

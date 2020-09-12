@@ -1,8 +1,8 @@
 import {br, button, section} from '/src/html.js'
-import sync from "../src/core/sync.js";
+import sync from "../../src/core/sync.js";
 import Sub from "./Sub.js";
-import withContext from "../src/withContext.js";
-import {h1} from "../src/html.js";
+import withContext from "../../src/withContext.js";
+import {h1} from "../../src/html.js";
 
 let number = 0;
 

@@ -1,9 +1,16 @@
 import {FieldNames} from "../contants.js";
 
+const TEXT_NODE = 3;
+
 const syncTextNode = (text, domNode = document.createTextNode(text), index = 0) => {
-  const textString = text.toString();
-  if (domNode.textContent !== textString) domNode.textContent = textString
-  domNode[FieldNames.CHILDREN_INDEX] = index
+  if(domNode.nodeType !== TEXT_NODE){
+    const newDomNode = document.createTextNode(text);
+    domNode.after(newDomNode)
+    domNode.remove();
+    domNode = newDomNode;
+  }
+  if (domNode.textContent !== text) domNode.textContent = text
+  domNode[FieldNames.NODE_GROUP_INDEX] = index
   return domNode
 }
 
