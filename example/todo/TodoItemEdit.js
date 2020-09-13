@@ -9,14 +9,14 @@ const onNameInput = item => e => update(() => item.name = e.target.value);
 
 const onSubmit = item => e => update(() => {
   e.preventDefault();
-  item.edit = false;
+  item.editing = false;
   delete item.lastVersion;
 });
 
 const onReset = item => e => update(() => {
   e.preventDefault();
   if (item.lastVersion) {
-    Object.assign(item, item.lastVersion, {edit: false});
+    Object.assign(item, item.lastVersion, {editing: false});
     delete item.lastVersion;
   } else {
     todo.splice(todo.findIndex(_item => _item === item), 1)
@@ -40,7 +40,7 @@ const TodoItemEdit = ({item}) => (
       onChange: onCheckedChange(item)
     }),
     input({
-      type: 'text', value: item.name,
+      type: 'text', value: item.name, required: true,
       onBBur: on('connect', onInputConnect(item)),
       onInput: onNameInput(item),
       onChange: onNameInput(item),

@@ -4,7 +4,7 @@ import {update} from "./Todo.js";
 
 const onCheckedChange = item => e => update(() => item.done = e.target.checked);
 
-const onEditClick = item => () => update(() => item.edit = true);
+const onEditClick = item => () => update(() => item.editing = true);
 
 const onDeleteClick = item => () => update(() => todo.splice(todo.findIndex(_item => _item === item), 1));
 
