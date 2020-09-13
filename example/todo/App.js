@@ -1,70 +1,59 @@
-import {button, div, form, h1, header, input, li, main, ul} from '../../src/html.js';
+import {button, div, h1, h2, header, input, label, li, main, section, ul} from '../../src/html.js';
 import sync from '../../src/core/sync.js';
-import TodoItem from "./TodoItem.js";
+import {filters, todo} from './todoList.js';
+import TodoItem from './TodoItem.js';
+import TodoItemEdit from './TodoItemEdit.js';
 
-const container = document.getElementById('app');
-let isAddFormVisible = false;
-let newTodoName = '';
+const getFilteredTodoList = () => todo
+  .filter(item => filters
+    .filter(({enabled}) => enabled)
+    .map(({condition}) => condition(item))
+    .reduce((passed1, passed2) => passed1 || passed2, false))
 
-const todo = [
-  {id: 0, name: 'write todo example', done: false},
-  {id: 1, name: 'publish it', done: false},
-  {id: 2, name: 'let people learn bbur', done: false},
-  {id: 3, name: 'force them to work like a dog', done: false},
-]
-
-const showAddForm = () => {
-  isAddFormVisible = true;
-  sync(App, container)
+const onFilterChange = filter => e => {
+  filter.enabled = e.target.checked;
+  render();
 };
 
-const hideAddForm = () => {
-  isAddFormVisible = false;
-  sync(App, container)
+const onAddClick = () => {
+  todo.push({
+    id: todo.length + 1,
+    name: '',
+    done: false,
+    editing: true
+  });
+  render();
 };
 
-const handleInput = e => {
-  newTodoName = e.target.value;
-  sync(App, container)
-};
-
-const addTodo = name => e => {
-  e.preventDefault();
-  todo.push({name, id: todo.length, done: false});
-  newTodoName = ''
-  sync(App, container)
-};
-
-const on = (type, handler) => e => e.detail.type === type && handler(e);
-
-const App = () => (
+export const App = () => (
   div({id: 'app-container'})(
     header(
       h1('TODO')
     ),
     main(
-      ul(
-        todo.map(({id, name}) => li({key: id})(TodoItem({id, name}))),
-        li(
-          isAddFormVisible
-            ?
-            form({onSubmit: addTodo(newTodoName)})(
-              input({
-                type: 'text', value: newTodoName,
-                onBBur: on('connect', e => e.target.focus()),
-                onKeydown: e => e.key === 'Escape' && hideAddForm(),
-                onInput: handleInput,
-                onChange: handleInput,
-                onFocusout: hideAddForm,
-              }),
-              input({type: 'submit', value: '+'}),
-            )
-            :
-            button({onClick: showAddForm})('+'),
-        ),
+      section(
+        h2('filter'),
+        filters.map(filter => (
+          label(
+            input({type: 'checkbox', checked: filter.enabled, onChange: onFilterChange(filter)}),
+            filter.name,
+          )
+        ))
       ),
+      section(
+        h2('list'),
+        ul(
+          getFilteredTodoList().map(item => (
+            li({key: item.id})(
+              item.editing ? TodoItemEdit({item}) : TodoItem({item})
+            )
+          )),
+        ),
+        todo.every(({editing}) => !editing) && button({onClick: onAddClick})('add'),
+      )
     ),
   )
 );
 
-sync(App, container)
+export const render = () => sync(App, document.getElementById('app-container'));
+

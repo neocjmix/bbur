@@ -1,3 +1,3 @@
-import "./App.js";
+import {render} from "./App.js";
 
-
+render();

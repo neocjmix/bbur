@@ -3,6 +3,7 @@ const syncAttributes = (attributes, targetDomNode) => {
     ? targetDomNode.getAttributeNames().sort()
     : [];
 
+  // todo: optimize
   Object.entries(attributes)
     .sort(([key1], [key2]) => key1.localeCompare(key2))
     .concat([[]]) // add sentinel for one iteration at least
@@ -18,10 +19,10 @@ const syncAttributes = (attributes, targetDomNode) => {
       if (key === undefined) return;
 
       // todo: could be optimized or memoized. The result will always be the same for each element type
-      if (targetDomNode.attributes[key]){
-        targetDomNode[key] = value.toString()
+      if (targetDomNode[key] === undefined){
+        targetDomNode.setAttribute(key, value);
       }else{
-        targetDomNode.setAttribute(key, value.toString());
+        targetDomNode[key] = value;
       }
       existingAttrNames.shift()
     })
