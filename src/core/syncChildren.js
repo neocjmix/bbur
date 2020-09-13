@@ -1,5 +1,5 @@
 import {FieldNames} from "../contants.js";
-import {flatten, getFinalNodeData, isSameChildGroup} from "../lib/util.js";
+import {flatten, getFinalNodeData, isSameChildGroup} from "../misc.js";
 import {syncNode} from "./sync.js";
 
 const getChildDomNodesGroups = (element, length) => {

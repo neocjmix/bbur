@@ -1,5 +1,5 @@
 import {FieldNames} from "../contants.js";
-import {classifyFields, getFinalNodeData} from '../lib/util.js';
+import {classifyFields, getFinalNodeData} from '../misc.js';
 import syncChildren from "./syncChildren.js";
 import syncAttributes from "./syncAttributes.js";
 import syncEventHandlers from "./syncEventHandlers.js";
@@ -57,6 +57,9 @@ export const syncNode = (nodeData, domNode, index, rootDomNode, context, isRoot)
   }
 }
 
+
+// syncThread
+// todo : multiple thread
 let currentContext = new RenderContext(true)
 
 const sync = (node, domNode) => {

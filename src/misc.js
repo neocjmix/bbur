@@ -1,4 +1,4 @@
-import {FieldNames} from "../contants.js";
+import {FieldNames} from "./contants.js";
 
 export const isFlatMappable = object => object && object.flatMap && typeof object.flatMap === 'function'
 
@@ -46,3 +46,9 @@ export const isSameChildGroup = (domNode1, domNode2) => (
   domNode1 && domNode2 &&
   domNode1[FieldNames.NODE_GROUP_INDEX] === domNode2[FieldNames.NODE_GROUP_INDEX]
 );
+
+export const replaceElement = (domNode, newDomNode) => {
+  domNode.after(newDomNode)
+  domNode.remove();
+  return newDomNode;
+};
