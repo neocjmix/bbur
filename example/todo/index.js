@@ -1,3 +1,3 @@
-import {render} from "./App.js";
+import {bind} from "./Todo.js";
 
-render();
+bind(document.getElementById('app'));

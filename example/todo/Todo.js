@@ -1,8 +1,8 @@
 import {button, div, h1, h2, header, input, label, li, main, section, ul} from '../../src/html.js';
-import sync from '../../src/core/sync.js';
-import {filters, todo} from './todoList.js';
+import {filters, todo} from './state.js';
 import TodoItem from './TodoItem.js';
 import TodoItemEdit from './TodoItemEdit.js';
+import createUpdater from "../../src/util/createUpdater.js";
 
 const getFilteredTodoList = () => todo
   .filter(item => filters
@@ -10,22 +10,17 @@ const getFilteredTodoList = () => todo
     .map(({condition}) => condition(item))
     .reduce((passed1, passed2) => passed1 || passed2, false))
 
-const onFilterChange = filter => e => {
-  filter.enabled = e.target.checked;
-  render();
-};
+const onFilterChange = filter => e => update(() => filter.enabled = e.target.checked);
 
-const onAddClick = () => {
+const onAddClick = () => update(() =>
   todo.push({
     id: todo.length + 1,
     name: '',
     done: false,
     editing: true
-  });
-  render();
-};
+  }));
 
-export const App = () => (
+export const Todo = () => (
   div({id: 'app-container'})(
     header(
       h1('TODO')
@@ -55,5 +50,4 @@ export const App = () => (
   )
 );
 
-export const render = () => sync(App, document.getElementById('app-container'));
-
+export const {update, bind} = createUpdater(Todo);

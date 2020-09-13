@@ -1,21 +1,12 @@
 import {button, input, label, span} from "../../src/html.js";
-import {todo} from "./todoList.js";
-import {render} from "./App.js";
+import {todo} from "./state.js";
+import {update} from "./Todo.js";
 
-const onCheckedChange = item => e => {
-  item.done = e.target.checked;
-  render();
-};
+const onCheckedChange = item => e => update(() => item.done = e.target.checked);
 
-const onEditClick = item => () => {
-  item.edit = true;
-  render();
-};
+const onEditClick = item => () => update(() => item.edit = true);
 
-const onDeleteClick = item => () => {
-  todo.splice(todo.findIndex(_item => _item === item), 1)
-  render();
-};
+const onDeleteClick = item => () => update(() => todo.splice(todo.findIndex(_item => _item === item), 1));
 
 const TodoItem = ({item}) => (
   label(

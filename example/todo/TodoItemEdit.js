@@ -1,16 +1,19 @@
 import {form, input} from "../../src/html.js";
-import {todo} from "./todoList.js";
+import {todo} from "./state.js";
 import {on} from "../../src/util/on.js";
-import {render} from "./App.js";
+import {update} from "./Todo.js";
 
-const onSubmit = item => e => {
+const onCheckedChange = item => e => update(() => item.done = e.target.checked);
+
+const onNameInput = item => e => update(() => item.name = e.target.value);
+
+const onSubmit = item => e => update(() => {
   e.preventDefault();
   item.edit = false;
   delete item.lastVersion;
-  render();
-};
+});
 
-const onReset = item => e => {
+const onReset = item => e => update(() => {
   e.preventDefault();
   if (item.lastVersion) {
     Object.assign(item, item.lastVersion, {edit: false});
@@ -18,18 +21,7 @@ const onReset = item => e => {
   } else {
     todo.splice(todo.findIndex(_item => _item === item), 1)
   }
-  render();
-};
-
-const onCheckedChange = item => e => {
-  item.done = e.target.checked;
-  render();
-};
-
-const onNameInput = item => e => {
-  item.name = e.target.value;
-  render();
-};
+});
 
 const onInputConnect = item => e => {
   if (item.name) {
