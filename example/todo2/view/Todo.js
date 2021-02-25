@@ -1,8 +1,8 @@
-import {button, div, h1, h2, header, input, label, li, main, section, ul} from '../../src/html.js';
-import {filters, todo} from './state.js';
+import {button, div, h1, h2, header, input, label, li, main, section, ul} from '../../../src/html.js';
+import {filters, todo} from '../state.js';
 import TodoItem from './TodoItem.js';
 import TodoItemEdit from './TodoItemEdit.js';
-import createUpdater from "../../src/util/createUpdater.js";
+import createUpdater from "../../../src/util/createUpdater.js";
 
 const getFilteredTodoList = () => todo
   .filter(item => filters

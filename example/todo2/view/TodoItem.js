@@ -1,5 +1,5 @@
-import {button, input, label, span} from "../../src/html.js";
-import {todo} from "./state.js";
+import {button, input, label, span} from "../../../src/html.js";
+import {todo} from "../state.js";
 import {update} from "./Todo.js";
 
 const onCheckedChange = item => e => update(() => item.done = e.target.checked);

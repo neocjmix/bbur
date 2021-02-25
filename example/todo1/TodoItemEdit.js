@@ -1,19 +1,19 @@
 import {form, input} from "../../src/html.js";
 import {todo} from "./state.js";
 import {on} from "../../src/util/on.js";
-import {update} from "./Todo.js";
+import {Todo} from "./Todo.js";
 
-const onCheckedChange = item => e => update(() => item.done = e.target.checked);
+const onCheckedChange = item => e => Todo.update(() => item.done = e.target.checked);
 
-const onNameInput = item => e => update(() => item.name = e.target.value);
+const onNameInput = item => e => Todo.update(() => item.name = e.target.value);
 
-const onSubmit = item => e => update(() => {
+const onSubmit = item => e => Todo.update(() => {
   e.preventDefault();
   item.editing = false;
   delete item.lastVersion;
 });
 
-const onReset = item => e => update(() => {
+const onReset = item => e => Todo.update(() => {
   e.preventDefault();
   if (item.lastVersion) {
     Object.assign(item, item.lastVersion, {editing: false});
